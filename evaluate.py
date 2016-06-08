@@ -6,40 +6,25 @@ from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn import ensemble
 
-#dates = {}
-#with open('./intermediate_data/order') as f:
-#    for line in f:
-#        p = [int(float(a)) for a in line.strip().split('\t')]
-#        if p[0] not in dates: dates[p[0]] = np.zeros((66, 144))
-#        dates[p[0]][p[1] - 1][p[2] - 1] = p[4]
-#
-#def predict(date, d_id, t_id):
-#    while date not in dates: date -= 7
-#    v = dates[date][d_id][t_id]
-#    return max(0, v - 2)
-#
-#    #u = float(p[4])
-#    #c1 = 0
-#    #c2 = 0
-#    #while pre_date > 0 and c1 < 1:
-#    #    if pre_date in dates: 
-#    #        v += dates[pre_date][d_id][t_id]
-#    #        c1 += 1
-#    #    pre_date -= 7
-#    #pre_date = p[0]
-#    #while pre_date > 0 and c2 < 0:
-#    #    if pre_date in dates: 
-#    #        v += dates[pre_date][d_id][t_id]
-#    #        c2 += 1
-#    #    pre_date -= 1 
-#    #v /= (c1 + c2)
-#    #res[d_id].append(abs(u - v) / u)
-#
-
 def is_weekend(date):
     if (date - 2) % 7 == 0: return 1
     if (date - 3) % 7 == 0: return 1
     return 0
+
+amount = [ 24720,   7960,   8789,  10538,   7453,   4834,   4213,  11471,   7562, 10420,  20138,   9674,  12635,  11625,  20005,  17148,   8946,  14422, 23817,  29968,  17080,  25528,      0,  10209,      0,  26259,      0, 24230,      0,  18524,]
+amount = np.array(amount)
+
+a = pd.read_table('./intermediate_data/order', names = ['date', 'district', 'time', 'available', 'gap']).astype(int).values
+A = np.zeros((2, 66, 144))
+B = np.zeros((2, 66, 144))
+for i in range(len(a)):
+    if a[i][0] == 1: continue
+    j = is_weekend(a[i][0])
+    k = a[i][1] - 1
+    l = a[i][2] - 1
+    A[j][k][l] += a[i][-1]
+    B[j][k][l] += 1 
+A /= B
 
 def prepare_data(suffix=""):
     a = pd.read_table('./intermediate_data/order%s' % suffix, names = ['date', 'district', 'time', 'available', 'gap'])
@@ -48,19 +33,18 @@ def prepare_data(suffix=""):
     b = pd.read_table('./intermediate_data/traffic%s' % suffix, names = ['date', 'district', 'time', 't0', 't1', 't2', 't3'])
     b = b.astype(int).values
 
-    X_all = []
-    X_available = []
+    X = []
+    y = []
     d = []
-    y_all = []
-    y_available = []
     for i in range(0, len(a)):
         if a[i][0] == 1 or a[i - 3][2] >= a[i][2]: continue
-        X_all.append([is_weekend(a[i][0]), a[i][1], a[i][2], a[i - 1][-1] + a[i - 1][-2], a[i - 2][-1] + a[i - 2][-2], a[i - 3][-1] + a[i - 3][-2], b[i][-4], b[i][-3], b[i][-2], b[i][-1]])
-        X_available.append([is_weekend(a[i][0]), a[i][1], a[i][2], a[i - 1][-2], a[i - 2][-2], a[i - 3][-2], b[i][-4], b[i][-3], b[i][-2], b[i][-1]])
-        y_all.append(a[i][-1] + a[i][-2])
-        y_available.append(a[i][-2])
+        j = is_weekend(a[i][0])
+        k = a[i][1] - 1
+        l = a[i][2] - 1
+        X.append([amount[a[i][0] - 1], A[j][k][l], a[i - 1][-1], a[i - 2][-1], a[i - 3][-1], b[i][-2], b[i][-1]])
+        y.append(a[i][-1])
         d.append((a[i][0], a[i][1], a[i][2]))
-    return np.array(X_all), np.array(X_available), np.array(y_all), np.array(y_available), d
+    return np.array(X), np.array(y), d
     
 
 def output(X, y, d):
@@ -87,31 +71,19 @@ def scorer(estimator, X, y):
 
 if __name__ == '__main__':
 
-    X_all_train, X_available_train, y_all_train, y_available_train, d_train = prepare_data()
+    X_train, y_train, d = prepare_data()
 
-    m1 = ensemble.GradientBoostingRegressor()
-    m2 = ensemble.GradientBoostingRegressor()
-
-    m1.fit(X_all_train, y_all_train)
-    m2.fit(X_available_train, y_available_train)
-
-    y_all_pred = m1.predict(X_all_train)
-    y_available_pred = m2.predict(X_available_train)
-
-    y_pred = np.maximum(0, y_all_pred - y_available_pred)
-    y_real = np.maximum(0, y_all_train - y_available_train)
-    print(np.abs(y_pred - y_real).sum() / y_pred.shape[0])
-
-
-
-
+    model = ensemble.GradientBoostingRegressor()
+    #model = linear_model.LogisticRegression()
+    model.fit(X_train, y_train)
     #scores = cross_validation.cross_val_score(model, X_train, y_train, cv=5, scoring = scorer)
+    #scores = scorer(model, X_train, y_train)
     #print(scores)
 
 
-    #X, d = prepare_test()
-    #y = model.predict(X) 
-    #y[y < 1] = 1
-    ##for i in range(len(X)):
-    ##    print("%s\t%s\t%s\t%s" % (d[i][0], d[i][1], d[i][2], y[i]))
+    X, y, d = prepare_data()
+    y_pred = model.predict(X) 
+    y_pred[y_pred < 1] = 1
+    for i in range(len(X)):
+        print("%s\t%s\t%s\t%s\t%s" % (d[i][0], d[i][1], d[i][2], y[i], y_pred[i]))
     #output(X, y, d)

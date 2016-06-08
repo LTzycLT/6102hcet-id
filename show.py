@@ -12,7 +12,7 @@ for i in range(1, len(lines)):
     t_id = int(p[3]) - 1
 
     for j in range(66):
-        x = [str(A[date][j][t_id]) for date in range(14, 21)]
+        x = [str(A[date][j][t_id]) for date in range(1, 21)]
         print("%s,%s,%s" % (j + 1, line.strip(), '\t'.join(x)))
 
 
