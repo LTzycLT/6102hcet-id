@@ -72,18 +72,20 @@ def scorer(estimator, X, y):
 if __name__ == '__main__':
 
     X_train, y_train, d = prepare_data()
+    #X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.7)
 
     model = ensemble.GradientBoostingRegressor()
-    #model = linear_model.LogisticRegression()
     model.fit(X_train, y_train)
     #scores = cross_validation.cross_val_score(model, X_train, y_train, cv=5, scoring = scorer)
-    #scores = scorer(model, X_train, y_train)
+    scores = scorer(model, X_train, y_train)
+    print(scores)
+    #scores = scorer(model, X_test, y_test)
     #print(scores)
 
 
-    X, y, d = prepare_data()
-    y_pred = model.predict(X) 
-    y_pred[y_pred < 1] = 1
-    for i in range(len(X)):
-        print("%s\t%s\t%s\t%s\t%s" % (d[i][0], d[i][1], d[i][2], y[i], y_pred[i]))
+    #X, y, d = prepare_data()
+    #y_pred = model.predict(X) 
+    #y_pred[y_pred < 1] = 1
+    #for i in range(len(X)):
+    #    print("%s\t%s\t%s\t%s\t%s" % (d[i][0], d[i][1], d[i][2], y[i], y_pred[i]))
     #output(X, y, d)
