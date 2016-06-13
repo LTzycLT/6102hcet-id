@@ -3,7 +3,7 @@ import pandas as pd
 
 R = np.zeros((21, 66, 144))
 P = np.zeros((21, 66, 144))
-a = np.array(pd.read_table('./out', names = ['date', 'district', 'time', 'real', 'pred']).astype(int).values)
+a = np.array(pd.read_table('out', names = ['date', 'district', 'time', 'real', 'pred']).astype(int).values)
 assert(a.shape[0] == 66 * 20 * 141)
 for i in range(a.shape[0]):
     j = a[i][0] - 1;

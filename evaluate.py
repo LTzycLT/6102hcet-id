@@ -5,13 +5,15 @@ from sklearn import cross_validation
 from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn import ensemble
+from sklearn import svm
+#from plot_learning_curve import plot_learning_curve
 
 def is_weekend(date):
     if (date - 2) % 7 == 0: return 1
     if (date - 3) % 7 == 0: return 1
     return 0
 
-amount = [ 24720,   7960,   8789,  10538,   7453,   4834,   4213,  11471,   7562, 10420,  20138,   9674,  12635,  11625,  20005,  17148,   8946,  14422, 23817,  29968,  17080,  25528,      0,  10209,      0,  26259,      0, 24230,      0,  18524,]
+amount = [ 24720,   7960,   8789,  10538,   7453,   4834,   4213,  11471,   7562, 10420,  20138,   9674,  12635,  11625,  20005,  17148,   8946,  14422, 23817,  29968,  17080,  25528,  15513,  10209,  25207,  26259,  16557, 24230,  35096,  18524,  23213]
 amount = np.array(amount)
 
 a = pd.read_table('./intermediate_data/order', names = ['date', 'district', 'time', 'available', 'gap']).astype(int).values
@@ -55,7 +57,7 @@ def output(X, y, d):
         t_id = d[i][2] - 1
         zyc[d[i][0]][d_id][t_id] = y[i]
 
-    lines = open('../test_set_1/read_me_1.txt').read().splitlines()
+    lines = open('../../season_2/test_set_2/read_me_2.txt').read().splitlines()
     for i in range(1, len(lines)):
         line = lines[i]
         p = line.strip().split('-')
@@ -72,20 +74,20 @@ def scorer(estimator, X, y):
 if __name__ == '__main__':
 
     X_train, y_train, d = prepare_data()
-    #X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.7)
+    weight = []
+    for yy in y_train: weight.append(0 if yy == 0 else 100 / yy)
 
     model = ensemble.GradientBoostingRegressor()
-    model.fit(X_train, y_train)
-    #scores = cross_validation.cross_val_score(model, X_train, y_train, cv=5, scoring = scorer)
-    scores = scorer(model, X_train, y_train)
-    print(scores)
-    #scores = scorer(model, X_test, y_test)
-    #print(scores)
+    model.fit(X_train, y_train, sample_weight=weight)
 
-
-    #X, y, d = prepare_data()
-    #y_pred = model.predict(X) 
+    #y_pred = model.predict(X_train) 
     #y_pred[y_pred < 1] = 1
+    #for i in range(len(X_train)):
+    #    print("%s\t%s\t%s\t%s\t%s" % (d[i][0], d[i][1], d[i][2], y_train[i], y_pred[i]))
+
+    X, y, d = prepare_data("_test_2")
+    y_pred = model.predict(X) 
+    y_pred[y_pred < 1] = 1
     #for i in range(len(X)):
     #    print("%s\t%s\t%s\t%s\t%s" % (d[i][0], d[i][1], d[i][2], y[i], y_pred[i]))
-    #output(X, y, d)
+    output(X, y_pred, d)

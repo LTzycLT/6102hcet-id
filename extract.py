@@ -67,10 +67,11 @@ if __name__ == '__main__':
     #extract_weather(range(1, 22), './weather_data/weather_data_2016-01-%02d')
 
     #extract_traffic(range(1, 22), './traffic_data/traffic_data_2016-01-%02d')
-    extract_traffic(range(22, 31, 2), '../test_set_1/traffic_data/traffic_data_2016-01-%02d_test')
+    #extract_traffic(range(23, 32, 2), '../../season_2/test_set_2/traffic_data/traffic_data_2016-01-%02d_test')
 
     #extract_order(range(1, 22), './order_data/order_data_2016-01-%02d')
     #extract_order(range(22, 31, 2), '../test_set_1/order_data/order_data_2016-01-%02d_test')
+    extract_order(range(23, 32, 2), '../../season_2/test_set_2/order_data/order_data_2016-01-%02d_test')
 
 
 
